@@ -1,0 +1,141 @@
+% This template has been taken and adapted from ICML 2021 submission file available under Creative Commons CC BY 4.0. 
+
+% The main.tex ICML 2021 submission file contains the following attribution: 
+
+% "This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021. Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files."
+
+% Link to the original template: https://icml.cc/Conferences/2021/StyleAuthorInstructions
+
+% The adaptation of the ICML 2021 submission file was done at the Idiap Research Institute by Alina Elena Baia, Darya Baranouskaya and Olena Hrynenko (equal contribution).
+
+\documentclass{article}
+
+% importing the style files
+\input{source/preamble}
+\usepackage[accepted]{source/icml2021}
+
+%%%%%%%%% ADD YOUR GROUP NUMBER %%%%%%%%%
+\icmltitlerunning{EE-559 Deep Learning: Group Mini-Project, Group GroupNumber}
+
+\begin{document}
+
+\twocolumn[
+%%%%%%%%% ADD TITLE OF YOUR GROUP MINI-PROJECT %%%%%%%%%
+\icmltitle{Group Mini-Project Title}
+
+%%%%%%%%% ADD NAMES OF THE GROUP MEMBERS %%%%%%%%%
+\begin{icmlauthorlist}
+\icmlauthor{Name Surname 1}{ch}
+\icmlauthor{Name Surname 2}{ch}
+\icmlauthor{Name Surname 3}{ch}
+\end{icmlauthorlist}
+
+% adding affiliation information
+\icmlaffiliation{ch}{Group GroupNumber}
+\vskip 0.3in
+]
+
+% command for printing affiliation
+\printAffiliationsAndNotice{} 
+
+%%%%%%%%% ADD ABSTRACT %%%%%%%%%
+\begin{abstract}
+Add your abstract here. Mention the issue(s) you have addressed, why they are important, and describe your proposed solution. Do not edit the style of this document (e.g.,~font size, margins) and do not to exceed the 3-page limit. 
+
+%%%%%%%%% ADD KEYWORDS %%%%%%%%%
+% Make sure to keep keywords on a new line. 
+\textbf{Keywords:} add your keywords here.
+
+\end{abstract}
+%%%%%%%%% ADD INTRODUCTION SECTION %%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+
+Add your introduction here. Select a current limitation or a relevant new problem: identify a specific problem you want to address. Clarify the objective(s) and the problem definition. State any hypotheses you made and reference the sources you used. Some common \LaTeX commands are listed below. 
+
+\textbf{Section}: you can refer to a section as Sec.~\ref{sec:related_work}.
+    
+\textbf{Equation}: 
+    \begin{equation} \label{eq:example}
+    x + y = 0.
+    \end{equation}
+    You can refer to an equation as Equation \ref{eq:example}.
+
+\textbf{Figure}: you can refer to a figure as Fig.~\ref{fig:example}. 
+
+\textbf{Table}: you can refer to a table as Tab.~\ref{tab:example} in your text. \url{https://www.tablesgenerator.com/} is useful for creating custom tables.
+   
+\textbf{Reference}: you can cite a source using command \texttt{\textbackslash cite}, e.g.~\cite{vaswani2017attention}. 
+    To add a reference, you can find your source on Google Scholar, click "Cite" and select BibTeX. Then copy the reference to \texttt{main.bib}. 
+    
+
+%%%%%%%%% ADD RELATED WORK SECTION %%%%%%%%%
+\section{Related Work}
+\label{sec:related_work}
+
+Add your literature review here. Discuss the limitations of the literature.
+
+%%%%%%%%% ADD METHOD SECTION %%%%%%%%%
+\section{Method}
+\label{sec:method}
+
+Use what you have learnt in EE-559 to address the limitations you identified. Describe and motivate your methodology. 
+
+%%%%%%%%% ADD VALIDATION SECTION %%%%%%%%%
+\section{Validation}
+\label{sec:validation}
+
+Implement your ideas and test them. Add your evaluation, testing and analysis here. Justify the choices for the experiments. Analyse the results and the performance: why does your hypothesis work / doesn’t work? Compare with alternative ideas / hypotheses. Discuss the limitations of the proposed solution.
+
+
+ \begin{figure}[t!]
+        \centering
+        \includegraphics[width=0.75\linewidth]{example-image-a}
+        \caption{Insert your caption here.}
+        \label{fig:example}
+    \end{figure}
+
+
+     \begin{table}[t]
+    \vskip 0.15in
+    \begin{center}
+    \begin{small}
+    \begin{sc}
+    \begin{tabular}{lcccr}
+    \toprule
+    Data set & Naive & Flexible & Better? \\
+    \midrule
+    Cleveland & 83.3$\pm$ 0.6& 80.0$\pm$ 0.6& $\times$\\
+    Glass2    & 61.9$\pm$ 1.4& 83.8$\pm$ 0.7& $\surd$ \\
+    Credit    & 74.8$\pm$ 0.5& 78.3$\pm$ 0.6&         \\
+    \bottomrule
+    \end{tabular}
+    \caption{Insert your caption here.}
+    \label{tab:example}
+    \end{sc}
+    \end{small}
+    \end{center}
+    \vskip -0.1in
+    \end{table}
+%%%%%%%%% ADD CONCLUSION SECTION %%%%%%%%%
+\section{Conclusion}
+\label{sec:conclusion}
+Add your conclusion here. 
+
+
+%%%%%%%%% REFERENCES SECTION %%%%%%%%%
+\bibliographystyle{ieeetr}
+% This is the link to the refereces file. 
+\bibliography{main}
+
+\end{document}
