@@ -97,7 +97,7 @@ optimizer = optim.AdamW(model.parameters(), lr=2e-5)
 # train loader contains 1029 batches
 
 # Training loop
-num_epochs = 17
+num_epochs = 35
 
 model.train()
 for epoch in range(num_epochs):
