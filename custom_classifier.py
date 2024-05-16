@@ -68,7 +68,7 @@ datasetDev = datasetDev.drop(columns="split")
 
 # Next step would be tokenization of the text as input for our model.
 tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-model = model = RobertaForSequenceClassification.from_pretrained('roberta-base')
+model = RobertaForSequenceClassification.from_pretrained('roberta-base')
 text = "Replace me by any text you'd like."
 encoded_input = tokenizer(text, return_tensors='pt')
 output = model(**encoded_input)
@@ -104,7 +104,7 @@ class CustomDataset(Dataset):
             "attention_mask": encoding["attention_mask"].flatten(),
             "labels": torch.tensor(label, dtype=torch.long),
         }
-    
+       
 
 # Load dataset for training
 train_texts = datasetTrain["text"].tolist()
@@ -113,6 +113,9 @@ train_labels = datasetTrain["label"].tolist()
 # Define training dataset and data loader
 train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+
+# Replace the classifier with the custom one
+model.classifier = CustomClassificationHead(model.config)
 
 # Freeze pre-trained model layers
 for param in model.roberta.parameters():
