@@ -44,35 +44,78 @@ class CustomClassificationHead(nn.Module):
 
 
 # Don't forget to cite the authors for using their dataset for our project.
-# Load the dataset into a pandas dataframe
-datasetFilename = "Dynamically_Generated_Hate_Dataset_v0.2.3.csv"
-datasetPath = os.path.join(os.getcwd(), datasetFilename)
-datasetInDataframe = pd.read_csv(datasetPath)
+# Load dataset for training into a pandas dataframe
+datasetTrainFilename = "OSACT2022-sharedTask-train-en.csv"
+datasetTrainPath = os.path.join(os.getcwd(), datasetTrainFilename)
+datasetTrainInDataframe = pd.read_csv(datasetTrainPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
 
-# Get dataset for training and make textlabels binary
-datasetTrain = datasetInDataframe[["text", "label", "split"]]
-datasetTrain = datasetTrain[datasetTrain["split"] == "train"]
-datasetTrain["label"] = datasetTrain["label"].map({"hate": 1, 'nothate': 0})
-datasetTrain = datasetTrain.drop(columns="split")
+# Process labels to binary format
+accumulatorList = []
+for index, row in datasetTrainInDataframe.iterrows():
+    entryList = [row['OFFOrNot'][0:3], row['HSOrNot'][0:3], row['VLGOrNot'][0:3], row['VIOOrNot'][0:3]]
+    if not all([True if string == "NOT" else False for string in entryList]):
+        accumulatorList.append(1)
+    else:
+        accumulatorList.append(0)
 
-# Get dataset for testing and make labels binary
-datasetTest = datasetInDataframe[["text", "label", "split"]]
-datasetTest = datasetTest[datasetTest["split"] == "test"]
-datasetTest["label"] = datasetTest["label"].map({"hate": 1, 'nothate': 0})
-datasetTest = datasetTest.drop(columns="split")
+datasetTrainInDataframe.insert(6, "BinLabel", accumulatorList)
+datasetTrain = datasetTrainInDataframe[["Text", "BinLabel"]]
 
-# Get dev dataset, whatever that is, and make labels binary
-datasetDev = datasetInDataframe[["text", "label", "split"]]
-datasetDev = datasetDev[datasetDev["split"] == "dev"]
-datasetDev["label"] = datasetDev["label"].map({"hate": 1, 'nothate': 0})
-datasetDev = datasetDev.drop(columns="split")
+
+# Load test dataset into a pandas dataframe
+datasetTestFilename = "OSACT2022-sharedTask-test-tweets-en.csv"
+datasetTestPath = os.path.join(os.getcwd(), datasetTestFilename)
+datasetTestInDataframe = pd.read_csv(datasetTestPath, names=['ID', 'Text'], header=None)
+
+# Load labels which are separately stored
+labelHSFilename = "OSACT2022-sharedTask-test-HS-gold-labels.csv"
+labelHSPath = os.path.join(os.getcwd(), labelHSFilename)
+labelHSDataframe = pd.read_csv(labelHSPath, names=['HSOrNot'], header=None)
+datasetTestInDataframe.insert(2, "HSOrNot", list(labelHSDataframe['HSOrNot']))
+labelOFFFilename = "OSACT2022-sharedTask-test-OFF-gold-labels.csv"
+labelOFFPath = os.path.join(os.getcwd(), labelOFFFilename)
+labelOFFDataframe = pd.read_csv(labelOFFPath, names=['OFFOrNot'], header=None)
+datasetTestInDataframe.insert(3, "OFFOrNot", list(labelOFFDataframe['OFFOrNot']))
+
+# Process labels to binary format
+accumulatorList = []
+for index, row in datasetTestInDataframe.iterrows():
+    entryList = [row['OFFOrNot'][0:3], row['HSOrNot'][0:3]]
+    if not all([True if string == "NOT" else False for string in entryList]):
+        accumulatorList.append(1)
+    else:
+        accumulatorList.append(0)
+
+datasetTestInDataframe.insert(4, "BinLabel", accumulatorList)
+datasetTest = datasetTestInDataframe[["Text", "BinLabel"]]
+
+# Load dev dataset into a pandas dataframe
+datasetDevFilename = "OSACT2022-sharedTask-dev-en.csv"
+datasetDevPath = os.path.join(os.getcwd(), datasetDevFilename)
+datasetDevInDataframe = pd.read_csv(datasetDevPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
+
+# Process labels to binary format
+accumulatorList = []
+for index, row in datasetDevInDataframe.iterrows():
+    entryList = [row['OFFOrNot'][0:3], row['HSOrNot'][0:3], row['VLGOrNot'][0:3], row['VIOOrNot'][0:3]]
+    if not all([True if string == "NOT" else False for string in entryList]):
+        accumulatorList.append(1)
+    else:
+        accumulatorList.append(0)
+
+datasetDevInDataframe.insert(6, "BinLabel", accumulatorList)
+datasetDev = datasetDevInDataframe[["Text", "BinLabel"]]
 
 # Next step would be tokenization of the text as input for our model.
-tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+modelFilename = "custom_classifier_trained_engl.pth"
+modelPath = os.path.join(os.getcwd(), modelFilename)
 model = RobertaForSequenceClassification.from_pretrained('roberta-base')
-text = "Replace me by any text you'd like."
-encoded_input = tokenizer(text, return_tensors='pt')
-output = model(**encoded_input)
+
+# Replace the classifier with the custom one
+model.classifier = CustomClassificationHead(model.config)
+
+model.load_state_dict(torch.load(modelPath))
+tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
 
 # Define dataset class
 class CustomDataset(Dataset):
@@ -105,23 +148,18 @@ class CustomDataset(Dataset):
             "attention_mask": encoding["attention_mask"].flatten(),
             "labels": torch.tensor(label, dtype=torch.long),
         }
-       
-
+    
 # Load dataset for training
-train_texts = datasetTrain["text"].tolist()
-train_labels = datasetTrain["label"].tolist()
+train_texts = datasetTrain["Text"].tolist()
+train_labels = datasetTrain["BinLabel"].tolist()
 
 # Define training dataset and data loader
 train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-# Replace the classifier with the custom one
-model.classifier = CustomClassificationHead(model.config)
-
 # Freeze pre-trained model layers
 for param in model.roberta.parameters():
    param.requires_grad = False
-
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
@@ -149,11 +187,11 @@ for epoch in range(num_epochs):
         count += 1
 
 # Save fineturned model
-torch.save(model.state_dict(), "custom_classifier_engl.pth")
+torch.save(model.state_dict(), "custom_classifier_trained_engl_arab.pth")
 
 # Load Datasets
-val_texts = datasetTest["text"].tolist()
-val_labels = datasetTest["label"].tolist()
+val_texts = datasetTest["Text"].tolist()
+val_labels = datasetTest["BinLabel"].tolist()
 
 # Define validation dataset and data loader
 val_dataset = CustomDataset(val_texts, val_labels, tokenizer, max_length=128)
@@ -167,6 +205,7 @@ counter1 = []
 
 predictedLabels = []
 trueLabels = []
+
 
 for batch in val_loader:
     counter1.append("0")
