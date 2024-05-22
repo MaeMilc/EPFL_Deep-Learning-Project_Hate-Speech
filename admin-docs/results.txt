@@ -1,0 +1,29 @@
+Results
+
+RoBerta / English Dataset / 35 Epochs
+Validation Acc: 0.6769
+Validation Loss: 0.0194
+
+RoBerta / English Dataset / Translated Arabic finetuning / 35 Epochs
+Validation Acc: 0.7127
+Validation Loss: 0.0183
+
+AraBert / Arabic Dataset / 35 Epochs
+Validation Acc: 1.000
+Validation Loss: 0.000
+
+BertTweet / English Dataset / 35 Epochs
+Validation Acc: 0.6357
+Validation Loss: 0.0201
+
+BertTweet / English Dataset / Translated Arabic Dataset / 35 Epochs
+Validation Acc: 0.6989
+Validation Loss: 0.0183
+
+RoBerta / English Dataset / Custom Classifier / 35 Epochs
+Validation Acc: 0.6825
+Validation Loss: 0.0183
+
+RoBerta / English Dataset / Translated Arabic Dataset / Custom Classifier / 35 Epochs
+Validation Acc: 0.7135
+Validation Loss: 0.0181
