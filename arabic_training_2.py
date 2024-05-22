@@ -92,55 +92,63 @@ train_path = 'arabic-data/OSACT2022-sharedTask-train.csv'
 dev_path = 'arabic-data/OSACT2022-sharedTask-dev.csv'
 test_path = 'arabic-data/OSACT2022-sharedTask-test-tweets.csv'
 
+
+text = "sampleBro"
+encoded_input = tokenizer(text, return_tensors='pt')
+output = model(**encoded_input)
+
+
+# Define dataset class
+class CustomDataset(Dataset):
+    def __init__(self, texts, labels, tokenizer, max_length):
+        self.texts = texts
+        self.labels = labels
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        text = self.texts[idx]
+        label = self.labels[idx]
+
+        encoding = self.tokenizer.encode_plus(
+            text,
+            add_special_tokens=True,
+            max_length=self.max_length,
+            return_token_type_ids=False,
+            padding="max_length",
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors="pt",
+        )
+
+        return {
+            "input_ids": encoding["input_ids"].flatten(),
+            "attention_mask": encoding["attention_mask"].flatten(),
+            "labels": torch.tensor(label, dtype=torch.long),
+        }
+    
+
+
 # Load and process datasets
 dataset_train = load_and_process_data(train_path)
 dataset_dev = load_and_process_data(dev_path)
 dataset_test = load_dataset('csv', data_files='arabic-data/OSACT2022-sharedTask-test-tweets.csv')
 
-# Now dataset_train, dataset_dev, and dataset_test contain 'text' and 'label' where label is binary
 
-# Define a PyTorch dataset class
-class TextDataset(Dataset):
-    def __init__(self, encodings, labels):
-        self.encodings = encodings
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.labels)
-
-    def __getitem__(self, idx):
-        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-        item['labels'] = torch.tensor(self.labels[idx], dtype=torch.long)
-        return item
-
-# Function to encode the texts
-def encode_texts(tokenizer, texts, labels, max_length=512):
-    encodings = tokenizer(texts, truncation=True, padding='max_length', max_length=max_length)
-    return TextDataset(encodings, labels)
+# Load dataset for training
+train_texts = dataset_train["text"].tolist()
+train_labels = dataset_train["label"].tolist()
 
 
-# Preparing datasets
-train_texts = dataset_train['text'].tolist()
-train_labels = dataset_train['label'].tolist()
-train_dataset = encode_texts(tokenizer, train_texts, train_labels)
-
-dev_texts = dataset_dev['text'].tolist()
-dev_labels = dataset_dev['label'].tolist()
-dev_dataset = encode_texts(tokenizer, dev_texts, dev_labels)
-
-# test_texts = dataset_test['tweet_text'].tolist()
-# test_labels = dataset_test['label'].tolist()
-# test_dataset = encode_texts(tokenizer, test_texts, test_labels)
-
-
-# Dataloader
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-dev_loader = DataLoader(dev_dataset, batch_size=16, shuffle=False)
-# test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 
 # Model training function
-def train_model(model, train_loader, optimizer, criterion, epochs=15):
+def train_model(model, train_loader, optimizer, criterion, epochs=35):
     model.train()
     for epoch in range(epochs):
         total_loss = 0
@@ -155,15 +163,16 @@ def train_model(model, train_loader, optimizer, criterion, epochs=15):
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        print(f'Epoch {epoch+1}: Loss {total_loss/len(train_loader)}')
+            print(f'Epoch {epoch+1}: Loss {total_loss/len(train_loader)}')
+
 
         
 # Training setup
-optimizer = optim.AdamW(model.parameters(), lr=5e-5)
+optimizer = optim.AdamW(model.parameters(), lr=2e-5)
 criterion = nn.CrossEntropyLoss()
 
 # Freeze pre-trained model layers
-for param in model.parameters():
+for param in model.bert.parameters():
     param.requires_grad = False
 
 
@@ -176,24 +185,43 @@ train_model(model, train_loader, optimizer, criterion)
 torch.save(model.state_dict(), "arabert-weights.pth")
 
 
-# Model evaluation function
-def evaluate_model(model, loader):
-    model.eval()
-    total_loss, total_accuracy = 0, 0
-    for batch in loader:
-        input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
-        labels = batch['labels']
-        with torch.no_grad():
-            outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
-        loss = outputs.loss
-        logits = outputs.logits
-        predictions = torch.argmax(logits, dim=-1)
-        accuracy = (predictions == labels).float().mean()
-        total_loss += loss.item()
-        total_accuracy += accuracy.item()
-    return total_loss / len(loader), total_accuracy / len(loader)
+# Load Datasets
+val_texts = dataset_dev["text"].tolist()
+val_labels = dataset_dev["label"].tolist()
 
-# Run this cell to evaluate the model
-val_loss, val_accuracy = evaluate_model(model, dev_loader)
-print(f'Validation Loss: {val_loss}, Validation Accuracy: {val_accuracy}')
+# Define validation dataset and data loader
+val_dataset = CustomDataset(val_texts, val_labels, tokenizer, max_length=128)
+val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+
+
+
+model.eval()
+val_loss = 0.0
+val_correct = 0
+
+counter = 0
+
+with torch.no_grad():
+    for batch in val_loader:
+        input_ids = batch["input_ids"]
+        attention_mask = batch["attention_mask"]
+        labels = batch["labels"]
+
+        outputs = model(input_ids, attention_mask=attention_mask)
+        loss = criterion(outputs.logits, labels)
+        val_loss += loss.item()
+
+        # Calculate accuracy
+        _, predicted = torch.max(outputs.logits, 1)
+        val_correct += (predicted == labels).sum().item()
+        print("counter", counter)
+        counter = counter + 1
+
+# Calculate average validation loss
+avg_val_loss = val_loss / len(val_loader.dataset)
+
+# Calculate validation accuracy
+val_accuracy = val_correct / len(val_loader.dataset)
+
+print(f"Validation Loss: {avg_val_loss:.4f}")
+print(f"Validation Accuracy: {val_accuracy:.4f}")
