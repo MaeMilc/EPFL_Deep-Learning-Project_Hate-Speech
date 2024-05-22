@@ -78,9 +78,9 @@ datasetDev = datasetDevInDataframe[["Text", "BinLabel"]]
 # Next step would be tokenization of the text as input for our model.
 modelFilename = "trained_model.pth"
 modelPath = os.path.join(os.getcwd(), modelFilename)
-model = AutoModelForSequenceClassification.from_pretrained("vinai/bertweet-base")
+model = RobertaForSequenceClassification.from_pretrained("roberta-base")
 model.load_state_dict(torch.load(modelPath))
-tokenizer = AutoTokenizer.from_pretrained("vinai/bertweet-base", use_fast=False)
+tokenizer = RobertaTokenizer.from_pretrained("roberta-base", use_fast=False)
 
 # Define dataset class
 class CustomDataset(Dataset):
