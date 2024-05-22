@@ -13,9 +13,10 @@ import os
 
 # Don't forget to cite the authors for using their dataset for our project.
 # Load dataset for training into a pandas dataframe
-datasetTrainFilename = "OSACT2022-sharedTask-train-en.csv"
+datasetTrainFilename = "arabic-data/OSACT2022-sharedTask-train.csv"
 datasetTrainPath = os.path.join(os.getcwd(), datasetTrainFilename)
 datasetTrainInDataframe = pd.read_csv(datasetTrainPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
+datasetTrainInDataframe = datasetTrainInDataframe.iloc[1:]
 
 # Process labels to binary format
 accumulatorList = []
@@ -30,16 +31,17 @@ datasetTrainInDataframe.insert(6, "BinLabel", accumulatorList)
 datasetTrain = datasetTrainInDataframe[["Text", "BinLabel"]]
 
 # Load test dataset into a pandas dataframe
-datasetTestFilename = "OSACT2022-sharedTask-test-tweets-en.csv"
+datasetTestFilename = "arabic-data/OSACT2022-sharedTask-test-tweets.csv"
 datasetTestPath = os.path.join(os.getcwd(), datasetTestFilename)
 datasetTestInDataframe = pd.read_csv(datasetTestPath, names=['ID', 'Text'], header=None)
+datasetTestInDataframe = datasetTestInDataframe.iloc[1:]
 
 # Load labels which are separately stored
-labelHSFilename = "OSACT2022-sharedTask-test-HS-gold-labels.csv"
+labelHSFilename = "arabic-data/OSACT2022-sharedTask-test-HS-gold-labels.csv"
 labelHSPath = os.path.join(os.getcwd(), labelHSFilename)
 labelHSDataframe = pd.read_csv(labelHSPath, names=['HSOrNot'], header=None)
 datasetTestInDataframe.insert(2, "HSOrNot", list(labelHSDataframe['HSOrNot']))
-labelOFFFilename = "OSACT2022-sharedTask-test-OFF-gold-labels.csv"
+labelOFFFilename = "arabic-data/OSACT2022-sharedTask-test-OFF-gold-labels.csv"
 labelOFFPath = os.path.join(os.getcwd(), labelOFFFilename)
 labelOFFDataframe = pd.read_csv(labelOFFPath, names=['OFFOrNot'], header=None)
 datasetTestInDataframe.insert(3, "OFFOrNot", list(labelOFFDataframe['OFFOrNot']))
@@ -57,9 +59,10 @@ datasetTestInDataframe.insert(4, "BinLabel", accumulatorList)
 datasetTest = datasetTestInDataframe[["Text", "BinLabel"]]
 
 # Load dev dataset into a pandas dataframe
-datasetDevFilename = "OSACT2022-sharedTask-dev-en.csv"
+datasetDevFilename = "arabic-data/OSACT2022-sharedTask-dev.csv"
 datasetDevPath = os.path.join(os.getcwd(), datasetDevFilename)
 datasetDevInDataframe = pd.read_csv(datasetDevPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
+datasetDevInDataframe = datasetDevInDataframe.iloc[1:]
 
 # Process labels to binary format
 accumulatorList = []
@@ -76,13 +79,8 @@ datasetDev = datasetDevInDataframe[["Text", "BinLabel"]]
 # Next step would be tokenization of the text as input for our model.
 # Loading the tokenizer and model
 model_name = "aubmindlab/bert-large-arabertv02-twitter"
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
-
-preTrainedModelFilename = "arabic-weights.pth"
-modelPath = os.path.join(os.getcwd(), preTrainedModelFilename)
-
-model.load_state_dict(torch.load(modelPath))
 tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 # Define dataset class
 class CustomDataset(Dataset):
@@ -116,8 +114,52 @@ class CustomDataset(Dataset):
             "labels": torch.tensor(label, dtype=torch.long),
         }
     
-# Define loss function and optimizer
+# Load dataset for training
+train_texts = datasetTrain["Text"].tolist()
+train_labels = datasetTrain["BinLabel"].tolist()
+
+
+train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+
+
+# Model training function
+def train_model(model, train_loader, optimizer, criterion, epochs=35):
+    model.train()
+    for epoch in range(epochs):
+        total_loss = 0
+        for batch in train_loader:
+            input_ids = batch['input_ids']
+            attention_mask = batch['attention_mask']
+            labels = batch['labels']
+            
+            optimizer.zero_grad()
+            outputs = model(input_ids, attention_mask=attention_mask)
+            loss = criterion(outputs.logits, labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+            print(f'Epoch {epoch+1}: Loss {total_loss/len(train_loader)}')
+
+
+        
+# Training setup
+optimizer = optim.AdamW(model.parameters(), lr=2e-5)
 criterion = nn.CrossEntropyLoss()
+
+# Freeze pre-trained model layers
+for param in model.bert.parameters():
+    param.requires_grad = False
+
+
+# Run this cell to train the model
+train_model(model, train_loader, optimizer, criterion)
+
+
+# Save the model and weights
+# model.save_pretrained('arabert-pretrained')
+torch.save(model.state_dict(), "arabert-weights.pth")
+
 
 # Load Datasets
 val_texts = datasetTest["Text"].tolist()
@@ -127,19 +169,10 @@ val_labels = datasetTest["BinLabel"].tolist()
 val_dataset = CustomDataset(val_texts, val_labels, tokenizer, max_length=128)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-# Evaluation loop
+
 model.eval()
 val_loss = 0.0
 val_correct = 0
-counter1 = []
-
-predictedLabels = []
-trueLabels = []
-
-for batch in val_loader:
-    counter1.append("0")
-
-print(len(counter1))
 
 counter = 0
 
@@ -159,19 +192,11 @@ with torch.no_grad():
         print("counter", counter)
         counter = counter + 1
 
-        # Update for f1 score
-        predictedLabels = predictedLabels + predicted.tolist()
-        trueLabels = trueLabels + labels.tolist()
-
 # Calculate average validation loss
 avg_val_loss = val_loss / len(val_loader.dataset)
 
 # Calculate validation accuracy
 val_accuracy = val_correct / len(val_loader.dataset)
 
-# Get the f1 score
-f1_score = multiclass_f1_score(torch.Tensor(predictedLabels), torch.Tensor(trueLabels), num_classes=2)
-
 print(f"Validation Loss: {avg_val_loss:.4f}")
 print(f"Validation Accuracy: {val_accuracy:.4f}")
-print(f"Validation F1-Score: {f1_score:.4f}")
