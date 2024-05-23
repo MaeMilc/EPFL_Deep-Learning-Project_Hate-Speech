@@ -5,7 +5,7 @@ Validation Acc: 0.6769
 Validation Loss: 0.0194
 
 RoBerta / English Dataset / Translated Arabic finetuning / 35 Epochs
-Validation Acc: 0.7127
+Validation Acc: 0.7135
 Validation Loss: 0.0183
 
 AraBert / Arabic Dataset / 35 Epochs
