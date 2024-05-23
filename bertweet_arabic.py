@@ -14,7 +14,7 @@ import os
 
 # Don't forget to cite the authors for using their dataset for our project.
 # Load dataset for training into a pandas dataframe
-datasetTrainFilename = "OSACT2022-sharedTask-train-en.csv"
+datasetTrainFilename = "translated-data/OSACT2022-sharedTask-train-en.csv"
 datasetTrainPath = os.path.join(os.getcwd(), datasetTrainFilename)
 datasetTrainInDataframe = pd.read_csv(datasetTrainPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
 
@@ -32,16 +32,16 @@ datasetTrain = datasetTrainInDataframe[["Text", "BinLabel"]]
 
 
 # Load test dataset into a pandas dataframe
-datasetTestFilename = "OSACT2022-sharedTask-test-tweets-en.csv"
+datasetTestFilename = "translated-data/OSACT2022-sharedTask-test-tweets-en.csv"
 datasetTestPath = os.path.join(os.getcwd(), datasetTestFilename)
 datasetTestInDataframe = pd.read_csv(datasetTestPath, names=['ID', 'Text'], header=None)
 
 # Load labels which are separately stored
-labelHSFilename = "OSACT2022-sharedTask-test-HS-gold-labels.csv"
+labelHSFilename = "translated-data/OSACT2022-sharedTask-test-HS-gold-labels.csv"
 labelHSPath = os.path.join(os.getcwd(), labelHSFilename)
 labelHSDataframe = pd.read_csv(labelHSPath, names=['HSOrNot'], header=None)
 datasetTestInDataframe.insert(2, "HSOrNot", list(labelHSDataframe['HSOrNot']))
-labelOFFFilename = "OSACT2022-sharedTask-test-OFF-gold-labels.csv"
+labelOFFFilename = "translated-data/OSACT2022-sharedTask-test-OFF-gold-labels.csv"
 labelOFFPath = os.path.join(os.getcwd(), labelOFFFilename)
 labelOFFDataframe = pd.read_csv(labelOFFPath, names=['OFFOrNot'], header=None)
 datasetTestInDataframe.insert(3, "OFFOrNot", list(labelOFFDataframe['OFFOrNot']))
@@ -59,7 +59,7 @@ datasetTestInDataframe.insert(4, "BinLabel", accumulatorList)
 datasetTest = datasetTestInDataframe[["Text", "BinLabel"]]
 
 # Load dev dataset into a pandas dataframe
-datasetDevFilename = "OSACT2022-sharedTask-dev-en.csv"
+datasetDevFilename = "translated-data/OSACT2022-sharedTask-dev-en.csv"
 datasetDevPath = os.path.join(os.getcwd(), datasetDevFilename)
 datasetDevInDataframe = pd.read_csv(datasetDevPath, names=['ID', 'Text', 'OFFOrNot', 'HSOrNot', 'VLGOrNot', 'VIOOrNot'], header=None)
 
