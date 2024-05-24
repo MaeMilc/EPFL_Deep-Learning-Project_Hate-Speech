@@ -187,7 +187,7 @@ if __name__ == "__main__":
         else:
             print("Unsupported argument")
             print("Supported arguments are:")
-            print("baseModel can be arabert, bertweet, custom or bertweet")
+            print("baseModel can be arabert, bertweet, custom or roberta")
             print("language can be arabic, english, translated")
             print("mode can be train or eval")
                       
@@ -332,7 +332,7 @@ if __name__ == "__main__":
         else:
             print("Unsupported argument")
             print("Supported arguments are:")
-            print("baseModel can be arabert, bertweet, custom or bertweet")
+            print("baseModel can be arabert, bertweet, custom or roberta")
             print("language can be arabic, english, translated")
             print("mode can be train or eval")
 
@@ -340,6 +340,6 @@ if __name__ == "__main__":
     else:
         print("Unsupported argument")
         print("Supported arguments are:")
-        print("baseModel can be arabert, bertweet, custom or bertweet")
+        print("baseModel can be arabert, bertweet, custom or roberta")
         print("language can be arabic, english, translated")
         print("mode can be train or eval")
