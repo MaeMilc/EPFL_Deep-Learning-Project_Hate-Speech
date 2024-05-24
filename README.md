@@ -1,6 +1,36 @@
 # DeepLearningProject_2024
 
+## Links to datasets used
 
+*English Dataset*: Copy link from word document.
+
+*Arabic Dataset*: Copy link from word document.
+
+## The training/evaluation caller interface
+
+The script *call_interface.py* can be used to reproduce training and a subsequent evaluation run of each of the models we've used. Alternatively, evaluation only can be performed on our pretrained models which can be downloaded from Google Drive [here](https://drive.google.com/drive/folders/1VlPQg8KQ2tQAx3xohE1Mq5YqyI9a2EdW?usp=drive_link).
+
+### How to invoke the script
+
+The script can be invoked from the command line like any other python script. It expects 3 arguments to be passed however which are the following:
+
+**Argument 1: baseModel** It can either be *arabert*, *bertweet*, *custom* or *roberta* depending on which model one wants to run.
+
+**Argument 2: language** It can either be *arabic*, *english* or *translated*. Note that arabic can only be used in conjunction with bertweet, as this corresponds to our baseline we compare ourselves to based on true arabic data. The other two options, english and translated, apply with respect to our own trained models on the base English corpus only when choosing english or alternatively on the finetuned version on translated arabic data when choosing arabic.
+
+**Argument 3: mode** It can either be *train* or *eval*. The choice depends on whether one wants to run the whole training process with a subsequent evaluation run or evaluation on a pertrained model only.
+
+### Sample usage
+
+If one wants to run training on the roberta model with a custom classifier on the English base corpus, one would have to invoke the program as follows:
+
+```
+python3 call_interface.py "custom" "english" "train"
+```
+The code for launching the pretrained version of the same model in evaluation only mode would be:
+```
+python3 call_interface.py "custom" "english" "eval"
+```
 
 ## Getting started
 

@@ -42,38 +42,6 @@ class CustomClassificationHead(nn.Module):
         x = self.out_proj(x)
         return x
 
-
-# Don't forget to cite the authors for using their dataset for our project.
-# Load the dataset into a pandas dataframe
-datasetFilename = "Dynamically_Generated_Hate_Dataset_v0.2.3.csv"
-datasetPath = os.path.join(os.getcwd(), datasetFilename)
-datasetInDataframe = pd.read_csv(datasetPath)
-
-# Get dataset for training and make textlabels binary
-datasetTrain = datasetInDataframe[["text", "label", "split"]]
-datasetTrain = datasetTrain[datasetTrain["split"] == "train"]
-datasetTrain["label"] = datasetTrain["label"].map({"hate": 1, 'nothate': 0})
-datasetTrain = datasetTrain.drop(columns="split")
-
-# Get dataset for testing and make labels binary
-datasetTest = datasetInDataframe[["text", "label", "split"]]
-datasetTest = datasetTest[datasetTest["split"] == "test"]
-datasetTest["label"] = datasetTest["label"].map({"hate": 1, 'nothate': 0})
-datasetTest = datasetTest.drop(columns="split")
-
-# Get dev dataset, whatever that is, and make labels binary
-datasetDev = datasetInDataframe[["text", "label", "split"]]
-datasetDev = datasetDev[datasetDev["split"] == "dev"]
-datasetDev["label"] = datasetDev["label"].map({"hate": 1, 'nothate': 0})
-datasetDev = datasetDev.drop(columns="split")
-
-# Next step would be tokenization of the text as input for our model.
-tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-model = RobertaForSequenceClassification.from_pretrained('roberta-base')
-text = "Replace me by any text you'd like."
-encoded_input = tokenizer(text, return_tensors='pt')
-output = model(**encoded_input)
-
 # Define dataset class
 class CustomDataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_length):
@@ -105,106 +73,152 @@ class CustomDataset(Dataset):
             "attention_mask": encoding["attention_mask"].flatten(),
             "labels": torch.tensor(label, dtype=torch.long),
         }
-       
 
-# Load dataset for training
-train_texts = datasetTrain["text"].tolist()
-train_labels = datasetTrain["label"].tolist()
+def load_dataset():
+    # Don't forget to cite the authors for using their dataset for our project.
+    # Load the dataset into a pandas dataframe
+    datasetFilename = "Dynamically_Generated_Hate_Dataset_v0.2.3.csv"
+    datasetPath = os.path.join(os.getcwd(), datasetFilename)
+    datasetInDataframe = pd.read_csv(datasetPath)
 
-# Define training dataset and data loader
-train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    # Get dataset for training and make textlabels binary
+    datasetTrain = datasetInDataframe[["text", "label", "split"]]
+    datasetTrain = datasetTrain[datasetTrain["split"] == "train"]
+    datasetTrain["label"] = datasetTrain["label"].map({"hate": 1, 'nothate': 0})
+    datasetTrain = datasetTrain.drop(columns="split")
 
-# Replace the classifier with the custom one
-model.classifier = CustomClassificationHead(model.config)
+    # Get dataset for testing and make labels binary
+    datasetTest = datasetInDataframe[["text", "label", "split"]]
+    datasetTest = datasetTest[datasetTest["split"] == "test"]
+    datasetTest["label"] = datasetTest["label"].map({"hate": 1, 'nothate': 0})
+    datasetTest = datasetTest.drop(columns="split")
 
-# Freeze pre-trained model layers
-for param in model.roberta.parameters():
-   param.requires_grad = False
+    # Get dev dataset, whatever that is, and make labels binary
+    datasetDev = datasetInDataframe[["text", "label", "split"]]
+    datasetDev = datasetDev[datasetDev["split"] == "dev"]
+    datasetDev["label"] = datasetDev["label"].map({"hate": 1, 'nothate': 0})
+    datasetDev = datasetDev.drop(columns="split")
 
+    return datasetTrain, datasetTest, datasetDev
 
-# Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.AdamW(model.parameters(), lr=2e-5)
+def load_model_tokenizer():
+    # Next step would be tokenization of the text as input for our model.
+    tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+    model = RobertaForSequenceClassification.from_pretrained('roberta-base')
+    text = "Replace me by any text you'd like."
+    encoded_input = tokenizer(text, return_tensors='pt')
+    output = model(**encoded_input)     
 
-# train loader contains 1029 batches
+    return model, tokenizer 
 
-# Training loop
-num_epochs = 35
+def training(datasetTrain, tokenizer, model):
+    # Load dataset for training
+    train_texts = datasetTrain["text"].tolist()
+    train_labels = datasetTrain["label"].tolist()
 
-model.train()
-for epoch in range(num_epochs):
-    count = 0
-    for batch in train_loader:
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
+    # Define training dataset and data loader
+    train_dataset = CustomDataset(train_texts, train_labels, tokenizer, max_length=128)
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-        optimizer.zero_grad()
-        outputs = model(input_ids, attention_mask=attention_mask)
-        loss = criterion(outputs.logits, labels)
-        loss.backward()
-        optimizer.step()
-        print("Epoch: ", epoch, "  Count: ", count)
-        count += 1
+    # Replace the classifier with the custom one
+    model.classifier = CustomClassificationHead(model.config)
 
-# Save fineturned model
-torch.save(model.state_dict(), "custom_classifier_engl.pth")
-
-# Load Datasets
-val_texts = datasetTest["text"].tolist()
-val_labels = datasetTest["label"].tolist()
-
-# Define validation dataset and data loader
-val_dataset = CustomDataset(val_texts, val_labels, tokenizer, max_length=128)
-val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
-
-# Evaluation loop
-model.eval()
-val_loss = 0.0
-val_correct = 0
-counter1 = []
-
-predictedLabels = []
-trueLabels = []
-
-for batch in val_loader:
-    counter1.append("0")
+    # Freeze pre-trained model layers
+    for param in model.roberta.parameters():
+        param.requires_grad = False
 
 
-print(len(counter1))
+    # Define loss function and optimizer
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.AdamW(model.parameters(), lr=2e-5)
 
-counter = 0
+    # train loader contains 1029 batches
 
-with torch.no_grad():
+    # Training loop
+    num_epochs = 35
+
+    model.train()
+    for epoch in range(num_epochs):
+        count = 0
+        for batch in train_loader:
+            input_ids = batch["input_ids"]
+            attention_mask = batch["attention_mask"]
+            labels = batch["labels"]
+
+            optimizer.zero_grad()
+            outputs = model(input_ids, attention_mask=attention_mask)
+            loss = criterion(outputs.logits, labels)
+            loss.backward()
+            optimizer.step()
+            print("Epoch: ", epoch, "  Count: ", count)
+            count += 1
+
+    # Save fineturned model
+    torch.save(model.state_dict(), "custom_classifier_trained_engl.pth")
+
+    return model, criterion
+
+def evaluation(datasetTest, model, tokenizer, criterion):
+    # Load Datasets
+    val_texts = datasetTest["text"].tolist()
+    val_labels = datasetTest["label"].tolist()
+
+    # Define validation dataset and data loader
+    val_dataset = CustomDataset(val_texts, val_labels, tokenizer, max_length=128)
+    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+
+    # Evaluation loop
+    model.eval()
+    val_loss = 0.0
+    val_correct = 0
+    counter1 = []
+
+    predictedLabels = []
+    trueLabels = []
+
     for batch in val_loader:
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
+        counter1.append("0")
 
-        outputs = model(input_ids, attention_mask=attention_mask)
-        loss = criterion(outputs.logits, labels)
-        val_loss += loss.item()
 
-        # Calculate accuracy
-        _, predicted = torch.max(outputs.logits, 1)
-        val_correct += (predicted == labels).sum().item()
-        print("counter", counter)
-        counter = counter + 1
+    print(len(counter1))
 
-        # Update for f1 score
-        predictedLabels = predictedLabels + predicted.tolist()
-        trueLabels = trueLabels + labels.tolist()
+    counter = 0
 
-# Calculate average validation loss
-avg_val_loss = val_loss / len(val_loader.dataset)
+    with torch.no_grad():
+        for batch in val_loader:
+            input_ids = batch["input_ids"]
+            attention_mask = batch["attention_mask"]
+            labels = batch["labels"]
 
-# Calculate validation accuracy
-val_accuracy = val_correct / len(val_loader.dataset)
+            outputs = model(input_ids, attention_mask=attention_mask)
+            loss = criterion(outputs.logits, labels)
+            val_loss += loss.item()
 
-# Get the f1 score
-f1_score = multiclass_f1_score(torch.Tensor(predictedLabels), torch.Tensor(trueLabels), num_classes=2)
+            # Calculate accuracy
+            _, predicted = torch.max(outputs.logits, 1)
+            val_correct += (predicted == labels).sum().item()
+            print("counter", counter)
+            counter = counter + 1
 
-print(f"Validation Loss: {avg_val_loss:.4f}")
-print(f"Validation Accuracy: {val_accuracy:.4f}")
-print(f"Validation F1-Score: {f1_score:.4f}")
+            # Update for f1 score
+            predictedLabels = predictedLabels + predicted.tolist()
+            trueLabels = trueLabels + labels.tolist()
+
+    # Calculate average validation loss
+    avg_val_loss = val_loss / len(val_loader.dataset)
+
+    # Calculate validation accuracy
+    val_accuracy = val_correct / len(val_loader.dataset)
+
+    # Get the f1 score
+    f1_score = multiclass_f1_score(torch.Tensor(predictedLabels), torch.Tensor(trueLabels), num_classes=2)
+
+    print(f"Validation Loss: {avg_val_loss:.4f}")
+    print(f"Validation Accuracy: {val_accuracy:.4f}")
+    print(f"Validation F1-Score: {f1_score:.4f}")
+
+if __name__ == "__main__":
+    train, test, dev = load_dataset()
+    mod, tok = load_model_tokenizer()
+    newMod, crit = training(train, tok, mod)
+    evaluation(test, newMod, tok, crit)

@@ -5,3 +5,9 @@ torch
 torchvision
 requests
 transformers
+os
+sys
+pathlib
+torcheval
+datasets
+re
