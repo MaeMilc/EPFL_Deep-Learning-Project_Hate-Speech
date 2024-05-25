@@ -12,7 +12,7 @@ The script *call_interface.py* can be used to reproduce training and a subsequen
 
 ### How to invoke the script
 
-The script can be invoked from the command line like any other python script. It expects 3 arguments to be passed however which are the following:
+The script can be invoked from the command line like any other python script. It expects 4 arguments of type string to be passed however which are the following:
 
 **Argument 1: baseModel** It can either be *arabert*, *bertweet*, *custom* or *roberta* depending on which model one wants to run.
 
@@ -20,16 +20,18 @@ The script can be invoked from the command line like any other python script. It
 
 **Argument 3: mode** It can either be *train* or *eval*. The choice depends on whether one wants to run the whole training process with a subsequent evaluation run or evaluation on a pertrained model only.
 
+**Argument 4: recording** It can either be *True* or any other string argument which logically evaluates to *False*. This argument is only useful when trying to run the training and or evaluation procedure on a subset of batches which was mainly used to record the screencasts for the submission of our project.
+
 ### Sample usage
 
-If one wants to run training on the roberta model with a custom classifier on the English base corpus, one would have to invoke the program as follows:
+If one wants to run training on the roberta model with a custom classifier on the entire English base corpus, one would have to invoke the program as follows:
 
 ```
-python3 call_interface.py "custom" "english" "train"
+python3 call_interface.py "custom" "english" "train" "False"
 ```
-The code for launching the pretrained version of the same model in evaluation only mode would be:
+The code for launching the pretrained version of the same model in evaluation only mode on a subset of batches would be:
 ```
-python3 call_interface.py "custom" "english" "eval"
+python3 call_interface.py "custom" "english" "eval" "True"
 ```
 
 ## Getting started

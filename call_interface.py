@@ -131,54 +131,76 @@ def evaluate_pretrained(val_texts, val_labels, model, tokenizer, criterion):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 4:
-        print("Usage: call_interface.py <baseModel> <language> <mode>")
+    if len(sys.argv) != 5:
+        print("Usage: call_interface.py <baseModel> <language> <mode> <recording>")
         sys.exit(1)
     
     baseModel = sys.argv[1]
     language = sys.argv[2]
     mode = sys.argv[3]
+    recording = sys.argv[4]
 
     # In this case, training will be performed as we've done it (including a single evaluation run afterwards)
     if mode == "train":
         if baseModel == "arabert" and language == "arabic":
             train, test, dev = arabert_arabic_eval.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = arabert_arabic_eval.load_model_tokenizer()
             newMod, crit = arabert_arabic_eval.training(train, tok, mod)
             arabert_arabic_eval.evaluation(test, newMod, tok, crit)
         
         elif baseModel == "bertweet" and language == "translated":
             train, test, dev = bertweet_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = bertweet_arabic_translated_english_pretrained.load_model_tokenizer()
             newMod, crit = bertweet_arabic_translated_english_pretrained.training(train, tok, mod)
             bertweet_arabic_translated_english_pretrained.evaluation(test, newMod, tok, crit)
 
         elif baseModel == "bertweet" and language == "english":
             train, test, dev = bertweet_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = bertweet_english_base_training.load_model_tokenizer()
             newMod, crit = bertweet_english_base_training.training(train, tok, mod)
             bertweet_english_base_training.evaluation(test, newMod, tok, crit)
 
         elif baseModel == "roberta" and language == "translated":
             train, test, dev = roberta_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_arabic_translated_english_pretrained.load_model_tokenizer()
             newMod, crit = roberta_arabic_translated_english_pretrained.training(train, tok, mod)
             roberta_arabic_translated_english_pretrained.evaluation(test, newMod, tok, crit)
 
         elif baseModel == "roberta" and language == "english":
             train, test, dev = roberta_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_english_base_training.load_model_tokenizer()
             newMod, crit = roberta_english_base_training.training(train, tok, mod)
             roberta_english_base_training.evaluation(test, newMod, tok, crit)
 
         elif baseModel == "custom" and language == "translated":
             train, test, dev = roberta_custom_classifier_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_custom_classifier_arabic_translated_english_pretrained.load_model_tokenizer()
             newMod, crit = roberta_custom_classifier_arabic_translated_english_pretrained.training(train, tok, mod)
             roberta_custom_classifier_arabic_translated_english_pretrained.evaluation(test, newMod, tok, crit)
 
         elif baseModel == "custom" and language == "english":
             train, test, dev = roberta_custom_classifier_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_custom_classifier_english_base_training.load_model_tokenizer()
             newMod, crit = roberta_custom_classifier_english_base_training.training(train, tok, mod)
             roberta_custom_classifier_english_base_training.evaluation(test, newMod, tok, crit)
@@ -190,11 +212,15 @@ if __name__ == "__main__":
             print("baseModel can be arabert, bertweet, custom or roberta")
             print("language can be arabic, english, translated")
             print("mode can be train or eval")
+            print("recording can be True or anything else logically evaluating to False")
                       
     # In this case, only evaluation will be performed as we've done it
     elif mode == "eval":
         if baseModel == "arabert" and language == "arabic":
             train, test, dev = arabert_arabic_eval.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = arabert_arabic_eval.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -214,6 +240,9 @@ if __name__ == "__main__":
         
         elif baseModel == "bertweet" and language == "translated":
             train, test, dev = bertweet_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = bertweet_arabic_translated_english_pretrained.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -233,6 +262,9 @@ if __name__ == "__main__":
 
         elif baseModel == "bertweet" and language == "english":
             train, test, dev = bertweet_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:100]
+                test = test.iloc[:100]
             mod, tok = bertweet_english_base_training.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -252,6 +284,9 @@ if __name__ == "__main__":
 
         elif baseModel == "roberta" and language == "translated":
             train, test, dev = roberta_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_arabic_translated_english_pretrained.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -271,6 +306,9 @@ if __name__ == "__main__":
 
         elif baseModel == "roberta" and language == "english":
             train, test, dev = roberta_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_english_base_training.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -290,6 +328,9 @@ if __name__ == "__main__":
 
         elif baseModel == "custom" and language == "translated":
             train, test, dev = roberta_custom_classifier_arabic_translated_english_pretrained.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_custom_classifier_arabic_translated_english_pretrained.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -309,6 +350,9 @@ if __name__ == "__main__":
 
         elif baseModel == "custom" and language == "english":
             train, test, dev = roberta_custom_classifier_english_base_training.load_dataset()
+            if recording == "True":
+                train = train.iloc[:128]
+                test = test.iloc[:128]
             mod, tok = roberta_custom_classifier_english_base_training.load_model_tokenizer()
 
             # Prepare the test datasets
@@ -335,6 +379,7 @@ if __name__ == "__main__":
             print("baseModel can be arabert, bertweet, custom or roberta")
             print("language can be arabic, english, translated")
             print("mode can be train or eval")
+            print("recording can be True or anything else logically evaluating to False")
 
     # In this case, an unsupported argument was passed
     else:
@@ -343,3 +388,4 @@ if __name__ == "__main__":
         print("baseModel can be arabert, bertweet, custom or roberta")
         print("language can be arabic, english, translated")
         print("mode can be train or eval")
+        print("recording can be True or anything else logically evaluating to False")
