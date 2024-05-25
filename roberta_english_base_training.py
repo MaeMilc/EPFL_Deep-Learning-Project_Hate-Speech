@@ -120,7 +120,8 @@ def training(datasetTrain, tokenizer, model):
             count += 1
 
     # Save fineturned model
-    torch.save(model.state_dict(), "trained_model.pth")
+    # Can be uncommented in case a new model ought to be saved
+    #torch.save(model.state_dict(), "trained_model.pth")
 
     return model ,criterion
 

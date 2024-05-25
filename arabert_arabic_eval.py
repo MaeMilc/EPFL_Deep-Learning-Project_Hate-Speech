@@ -163,8 +163,8 @@ def training(datasetTrain, tokenizer, model):
 
 
     # Save the model and weights
-    # model.save_pretrained('arabert-pretrained')
-    torch.save(model.state_dict(), "arabert-weights.pth")
+    # Can be uncommented in case a new model ought to be saved
+    #torch.save(model.state_dict(), "arabert-weights.pth")
 
     return model, criterion
 

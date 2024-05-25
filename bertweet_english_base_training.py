@@ -121,7 +121,8 @@ def training(datasetTrain, tokenizer, model):
             count += 1
 
     # Save fineturned model
-    torch.save(model.state_dict(), "bertweet_trained_engl.pth")
+    # Can be uncommented in case a new model ought to be saved
+    #torch.save(model.state_dict(), "bertweet_trained_engl.pth")
 
     return model, criterion
 
