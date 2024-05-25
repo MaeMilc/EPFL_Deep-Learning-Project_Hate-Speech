@@ -6,6 +6,10 @@
 
 *Arabic Dataset*: [Arabic Dataset](https://sites.google.com/view/arabichate2022)
 
+## Preprocessing of Arabic dataset
+
+To preprocess the Arabic data for usage in the scripts below the reader is asked to consult the file *translate.ipynb*. Directions on how to proceed and set up [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate?tab=readme-ov-file) can be found in this file.
+
 ## The training/evaluation caller interface
 
 The script *call_interface.py* can be used to reproduce training and a subsequent evaluation run of each of the models we've used. Alternatively, evaluation only can be performed on our pretrained models which can be downloaded from Google Drive [here](https://drive.google.com/drive/folders/1VlPQg8KQ2tQAx3xohE1Mq5YqyI9a2EdW?usp=drive_link).
