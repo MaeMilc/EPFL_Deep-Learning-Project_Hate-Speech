@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import torchvision
 import requests
-from torcheval.metrics.functional import multiclass_f1_score
+# from torcheval.metrics.functional import multiclass_f1_score
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import os
 
@@ -252,11 +252,11 @@ def evaluation(datasetTest, model, tokenizer, criterion):
     val_accuracy = val_correct / len(val_loader.dataset)
 
     # Get the f1 score
-    f1_score = multiclass_f1_score(torch.Tensor(predictedLabels), torch.Tensor(trueLabels), num_classes=2)
+    # f1_score = multiclass_f1_score(torch.Tensor(predictedLabels), torch.Tensor(trueLabels), num_classes=2)
 
     print(f"Validation Loss: {avg_val_loss:.4f}")
     print(f"Validation Accuracy: {val_accuracy:.4f}")
-    print(f"Validation F1-Score: {f1_score:.4f}")
+    # print(f"Validation F1-Score: {f1_score:.4f}")
 
 if __name__ == "__main__":
     train, test, dev = load_dataset()
