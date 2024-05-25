@@ -8,3 +8,4 @@ transformers
 pathlib
 torcheval
 datasets
+tqdm
