@@ -4,7 +4,25 @@
 
 *English Dataset*: [English Dataset](https://github.com/bvidgen/Dynamically-Generated-Hate-Speech-Dataset)
 
+Credits with respect to the English dataset and our thanks for making it publicly accessible go to:
+
+B. Vidgen, T. Thrush, Z. Waseem, and D. Kiela,
+“Learning from the Worst: Dynamically Generated
+Datasets to Improve Online Hate Detection,” in Pro-
+ceedings of the 59th Annual Meeting of the Association
+for Computational Linguistics and the 11th Interna-
+tional Joint Conference on Natural Language Process-
+ing (Volume 1: Long Papers) (C. Zong, F. Xia, W. Li,
+and R. Navigli, eds.), (Online), pp. 1667–1682, Asso-
+ciation for Computational Linguistics, Aug. 2021.
+
 *Arabic Dataset*: [Arabic Dataset](https://sites.google.com/view/arabichate2022)
+
+Credits with respect to the Arabic dataset and our thanks for making it publicly accessible go to:
+
+H. Mubarak, S. Hassan, and S. A. Chowdhury, “Emojis
+as Anchors to Detect Arabic Offensive Language and
+Hate Speech,” Jan. 2022.
 
 ## Preprocessing of Arabic dataset
 
@@ -41,4 +59,8 @@ python3 call_interface.py "custom" "english" "eval" "True"
 
 ### Screencast
 
-The validation results in the screencast do not exactely match the one obtained in the paper, as the validation would run for about an hour for each trained model. Thus only a small batch size is choosen to demonstate the running code. 
+We provide two different screencasts which should cover all the relevant aspects when taken together. The two screencasts show the following respectively:
+
+- **Screencast_deep_learning_2024_group7_train_eval.webm** shows training and a subsequent evaluation run for each of our models. Note that we perform both tasks only on a subset of 4 batches and training only runs for two epochs, as the screencast would become excessively long otherwise. Moreover, the evalation scores do not match those of the report but such as to reproduce them, we provide the other screencast.
+
+- **Screencast_deep_learning_2024_group7_reproduce_results.webm** reproduces the results presented in the report for each of our models. It simply shows each of the pretrained models being evaluated on the entire respective test set. Please note that the video has been sped up by a factor of 16 since evaluation takes roughly 1 hour and 20 minutes in real time.
