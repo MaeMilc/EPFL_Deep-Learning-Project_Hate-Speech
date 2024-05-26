@@ -37,3 +37,8 @@ The code for launching the pretrained version of the same model in evaluation on
 ```
 python3 call_interface.py "custom" "english" "eval" "True"
 ```
+
+
+### Screencast
+
+The validation results in the screencast do not exactely match the one obtained in the paper, as the validation would run for about an hour for each trained model. Thus only a small batch size is choosen to demonstate the running code. 
